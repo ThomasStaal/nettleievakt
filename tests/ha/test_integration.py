@@ -86,9 +86,10 @@ async def test_real_entities_forecast_outage_and_unload(hass, freezer, hass_stor
     await hass.async_block_till_done()
     assert state_for(hass, entry, "current_hour_kwh").state == "unknown"
     assert state_for(hass, entry, "hourly_target_risk", "binary_sensor").state == "unknown"
+    coordinator = entry.runtime_data
     assert await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
-    assert entry.runtime_data._unsubscribers == []
+    assert coordinator._unsubscribers == []
     assert f"{DOMAIN}.{entry.entry_id}" in hass_storage
 
 

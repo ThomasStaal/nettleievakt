@@ -12,6 +12,7 @@ electrical protection, billing or automatic control of critical equipment.
 
 [Norsk brukerveiledning](docs/brukerveiledning.md) ·
 [Calculation method](docs/calculations.md) ·
+[First household test](docs/testing-with-a-meter.md) ·
 [Report a problem](https://github.com/ThomasStaal/nettleievakt/issues)
 
 ## What you get

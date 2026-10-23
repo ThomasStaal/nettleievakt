@@ -125,7 +125,7 @@ class NettleievaktPanel extends HTMLElement {
   $(id) { return this.shadowRoot.getElementById(id); }
   set hass(value) { this._hass = value; this.render(); }
   set panel(value) { this._panel = value; this.render(); }
-  set narrow(value) { this.$("menu").hidden = !value; }
+  set narrow(value) { this.toggleAttribute("narrow", Boolean(value)); }
   connectedCallback() { this.render(); }
   text(id, value) { if (this.$(id).textContent !== value) this.$(id).textContent = value; }
   reading(id, value, unit) { this.text(id, format(value, unit)); this.$(id).classList.toggle("missing", value === null); }

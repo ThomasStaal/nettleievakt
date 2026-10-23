@@ -1,0 +1,15 @@
+.venv/
+.venv-ha/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage*
+htmlcov/
+*.egg-info/
+.env*
+!.env.example
+.storage/
+home-assistant*.log*
+home-assistant*.db*
+secrets.yaml
+.DS_Store

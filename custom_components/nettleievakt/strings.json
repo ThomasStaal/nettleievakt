@@ -1,0 +1,79 @@
+{
+  "title": "Nettleievakt",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Monitor your grid-import peaks",
+        "description": "Select cumulative energy imported from the grid, not export, net energy, a single appliance or a daily-reset helper. An optional whole-home power sensor enables forecasts. Estimates start collecting now; no past history is imported. Check that your grid operator uses hourly peaks on distinct days.",
+        "data": {
+          "name": "Name",
+          "energy_sensor": "Cumulative grid import",
+          "power_sensor": "Current grid power (optional)",
+          "target_kw": "Hourly warning threshold",
+          "peak_days": "Number of distinct peak days",
+          "max_gap_minutes": "Maximum gap between source reports"
+        },
+        "data_description": {
+          "energy_sensor": "Lifetime imported energy in Wh, kWh or MWh. Positive, cumulative readings are required.",
+          "power_sensor": "Whole-home import in W or kW. A signed net-power sensor is supported; export must be negative.",
+          "target_kw": "A personal warning threshold, not a tariff or electrical safety limit. Leave a margin below your tariff boundary.",
+          "peak_days": "Use 3 only if your grid operator averages the highest hourly peaks from three different days.",
+          "max_gap_minutes": "Intervals longer than this are excluded, not estimated. Default: 5 minutes."
+        }
+      }
+    },
+    "error": {
+      "invalid_energy": "Choose an available cumulative energy sensor (total or total_increasing) with a valid Wh, kWh or MWh reading.",
+      "invalid_power": "Choose an available power sensor with a finite W or kW reading."
+    },
+    "abort": {
+      "already_configured": "This energy sensor already has a Nettleievakt entry."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Threshold and calculation model",
+        "description": "Changes keep existing hourly history. Reloading briefly interrupts collection. This helper estimates hourly peaks only; it does not calculate your electricity bill.",
+        "data": {
+          "target_kw": "Hourly warning threshold",
+          "peak_days": "Number of distinct peak days",
+          "max_gap_minutes": "Maximum gap between source reports"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_hour_kwh": {
+        "name": "Imported energy this hour"
+      },
+      "projected_peak_kw": {
+        "name": "Projected hourly average"
+      },
+      "remaining_power_kw": {
+        "name": "Remaining average power budget"
+      },
+      "monthly_peak_kw": {
+        "name": "Observed monthly peak average"
+      },
+      "month_coverage_percent": {
+        "name": "Monthly measurement coverage"
+      },
+      "status": {
+        "name": "Measurement status",
+        "state": {
+          "waiting": "Waiting for source",
+          "stale": "Source is stale",
+          "incomplete_hour": "Current hour has missing data",
+          "ok": "Current hour is covered"
+        }
+      }
+    },
+    "binary_sensor": {
+      "hourly_target_risk": {
+        "name": "Hourly threshold warning"
+      }
+    }
+  }
+}

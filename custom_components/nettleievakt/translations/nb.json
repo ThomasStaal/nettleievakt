@@ -1,0 +1,79 @@
+{
+  "title": "Nettleievakt",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Følg effekttoppene dine",
+        "description": "Velg samlet strøm kjøpt fra nettet, ikke eksport, nettoforbruk, ett apparat eller en måler som nullstilles hver dag. En effektsensor for hele boligen gir prognoser. Historikken starter nå; eldre målinger hentes ikke inn. Sjekk at nettselskapet ditt bruker klokketimer og døgnmakser fra ulike dager.",
+        "data": {
+          "name": "Navn",
+          "energy_sensor": "Samlet strøm kjøpt fra nettet",
+          "power_sensor": "Effekt fra nettet nå (valgfritt)",
+          "target_kw": "Varselgrense for timen",
+          "peak_days": "Antall ulike dager i snittet",
+          "max_gap_minutes": "Lengste tillatte opphold mellom målinger"
+        },
+        "data_description": {
+          "energy_sensor": "Akkumulert import i Wh, kWh eller MWh. Velg en løpende teller, ikke dagsforbruk.",
+          "power_sensor": "Effekt for hele boligen i W eller kW. Ved solceller må eksport ha negativt fortegn.",
+          "target_kw": "Din egen varselgrense, ikke en strømpris eller sikkerhetsgrense. Legg gjerne inn litt margin til nettleietrinnet.",
+          "peak_days": "Velg 3 bare hvis nettselskapet bruker snittet av høyeste klokketime på tre forskjellige dager.",
+          "max_gap_minutes": "Lengre opphold regnes som manglende data. Standard: 5 minutter."
+        }
+      }
+    },
+    "error": {
+      "invalid_energy": "Velg en tilgjengelig, akkumulert energisensor (total eller total_increasing) med gyldig verdi i Wh, kWh eller MWh.",
+      "invalid_power": "Velg en tilgjengelig effektsensor med gyldig verdi i W eller kW."
+    },
+    "abort": {
+      "already_configured": "Denne energisensoren er allerede satt opp i Nettleievakt."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Varselgrense og beregning",
+        "description": "Endringer beholder timehistorikken, men omstart av integrasjonen gir et kort opphold i målingene. Nettleievakt anslår effekttopper, ikke hele strømregningen.",
+        "data": {
+          "target_kw": "Varselgrense for timen",
+          "peak_days": "Antall ulike dager i snittet",
+          "max_gap_minutes": "Lengste tillatte opphold mellom målinger"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_hour_kwh": {
+        "name": "Kjøpt strøm denne timen"
+      },
+      "projected_peak_kw": {
+        "name": "Anslått timesnitt"
+      },
+      "remaining_power_kw": {
+        "name": "Gjenværende effektbudsjett"
+      },
+      "monthly_peak_kw": {
+        "name": "Observert snitt av døgnmakser"
+      },
+      "month_coverage_percent": {
+        "name": "Måledekning denne måneden"
+      },
+      "status": {
+        "name": "Målestatus",
+        "state": {
+          "waiting": "Venter på målinger",
+          "stale": "Målingene er for gamle",
+          "incomplete_hour": "Mangler data i denne timen",
+          "ok": "Denne timen har måledata"
+        }
+      }
+    },
+    "binary_sensor": {
+      "hourly_target_risk": {
+        "name": "Varsel om høy timetopp"
+      }
+    }
+  }
+}

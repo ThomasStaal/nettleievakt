@@ -1,0 +1,30 @@
+blueprint:
+  name: Nettleievakt - hourly threshold warning
+  description: Notify after the hourly forecast stays over your target for two minutes.
+  domain: automation
+  input:
+    warning_entity:
+      name: Nettleievakt hourly warning
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+              integration: nettleievakt
+    notification_actions:
+      name: Notification actions
+      description: Choose how Home Assistant should notify you. No equipment is switched by this blueprint.
+      default:
+        - action: persistent_notification.create
+          data:
+            title: Nettleievakt
+            message: The current hour may exceed your chosen target. Check the forecast and measurement status.
+      selector:
+        action: {}
+triggers:
+  - trigger: state
+    entity_id: !input warning_entity
+    to: "on"
+    for:
+      minutes: 2
+actions: !input notification_actions
+mode: single

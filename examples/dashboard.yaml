@@ -1,3 +1,4 @@
+# Optional: the sidebar dashboard is created automatically, without this file.
 # Replace these example IDs with the entities from your installation.
 # This is a dashboard view, not an entire Home Assistant configuration.
 title: Nettleievakt
@@ -5,20 +6,21 @@ path: nettleievakt
 icon: mdi:transmission-tower
 cards:
   - type: entities
-    title: This hour
+    title: Denne timen
     entities:
       - sensor.nettleievakt_imported_energy_this_hour
       - sensor.nettleievakt_projected_hourly_average
       - sensor.nettleievakt_remaining_average_power_budget
       - binary_sensor.nettleievakt_hourly_threshold_warning
       - sensor.nettleievakt_measurement_status
+      - number.nettleievakt_hourly_warning_threshold
   - type: entities
-    title: This month - observed data
+    title: Denne måneden - målte verdier
     entities:
       - sensor.nettleievakt_observed_monthly_peak_average
       - sensor.nettleievakt_monthly_measurement_coverage
   - type: history-graph
-    title: Hourly forecast
+    title: Anslått timesnitt
     hours_to_show: 6
     entities:
       - sensor.nettleievakt_projected_hourly_average

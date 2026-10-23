@@ -3,11 +3,11 @@
   "name": "Nettleievakt",
   "codeowners": ["@ThomasStaal"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["panel_custom"],
   "documentation": "https://github.com/ThomasStaal/nettleievakt",
   "integration_type": "helper",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/ThomasStaal/nettleievakt/issues",
   "requirements": [],
-  "version": "0.1.0b1"
+  "version": "0.2.0b1"
 }

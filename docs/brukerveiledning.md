@@ -33,9 +33,36 @@ Vanligvis bør målingene komme med sekunders mellomrom.
 4. Start Home Assistant på nytt.
 5. Gå til **Innstillinger > Enheter og tjenester > Legg til integrasjon**.
 6. Søk etter **Nettleievakt**, velg sensorene og sett en varselgrense.
+7. Åpne **Nettleievakt** i sidemenyen. Dashboardet er ferdig satt opp.
 
 Manuell installasjon er også mulig: legg mappen `custom_components/nettleievakt`
 fra prosjektet i `config/custom_components` i Home Assistant, og start på nytt.
+
+## Dashboardet er klart uten YAML
+
+Fra versjon 0.2.0b1 får du et norsk dashboard automatisk. Det fungerer i nettleseren
+og Home Assistant-appen, tilpasser seg mobilskjermen og følger lyst eller mørkt
+tema. Du trenger ikke installere kort eller finne sensornavn. Dine eksisterende
+dashboards blir ikke endret.
+
+Øverst ser du prognosen for denne klokketimen og **Din varselgrense**. Skriv inn
+grensen i kW og trykk **Lagre**. Du kan bruke både komma og punktum, med én desimal.
+Integrasjonen lastes kort inn på nytt. Historikken beholdes.
+
+- **Under varselgrensen:** prognosen har mer enn 10 prosent margin.
+- **Nær varselgrensen:** prognosen er fortsatt under grensen, men med høyst 10
+  prosent margin. Dette er bare et tidlig signal i dashboardet.
+- **Timen ligger an til å nå grensen:** prognosen er på eller over grensen.
+- **Denne timen mangler målinger:** vi kjenner ikke hele timens forbruk.
+- **Målingene er for gamle:** nye data mangler. Vi viser ikke et grønt signal.
+- **Mistet forbindelsen:** dashboardet har ikke kontakt med Home Assistant.
+
+Lenger nede ser du månedens målte toppdager og måledekning. Det er faktiske
+registrerte timer, ikke en simulert forbrukskurve. De to gjentatte timene ved
+overgang til vintertid skilles med UTC-forskyvningen.
+
+Har du allerede en eldre beta? Oppdater i HACS og start Home Assistant på nytt.
+Det nye dashboardet kommer uten å slette og legge til integrasjonen på nytt.
 
 ## Velg en nyttig varselgrense
 
@@ -79,10 +106,12 @@ HomeWizard-appen eller Home Assistant hentes ikke inn i denne versjonen.
 
 ## Sett opp et varsel
 
-Legg først entitetene på et vanlig Home Assistant-dashboard. For varsler kan du
-bruke prosjektets [blueprint](../blueprints/hourly-warning.yaml): velg
+Dashboardet viser status, men sender ikke pushvarsler av seg selv. For varsler kan du
+bruke prosjektets norske [blueprint](../blueprints/hourly-warning.yaml): velg
 varselentiteten fra Nettleievakt og handlingen som skal sende beskjeden.
-Varslet utløses først når prognosen har ligget over grensen i to minutter.
+Varslet utløses først når prognosen har ligget på eller over grensen i to minutter.
+Standardhandlingen gir et varsel inne i Home Assistant. Velg din egen
+mobilvarslingshandling hvis du ønsker push til telefonen.
 
 Varslet gjelder den pågående timen. Det sier ikke at nettleien nødvendigvis øker.
 En høyere eller lavere time kan være uten betydning hvis andre dager allerede
@@ -90,8 +119,8 @@ bestemmer månedsnivået.
 
 ## Data og begrensninger
 
-Timeverdiene lagres lokalt i inntil 62 dager. Endrer du varselgrensen under
-**Konfigurer**, beholdes historikken. Fjerner du integrasjonen, slettes dens egne
+Timeverdiene lagres lokalt i inntil 62 dager. Endrer du varselgrensen på dashboardet
+eller under **Konfigurer**, beholdes historikken. Fjerner du integrasjonen, slettes dens egne
 lagrede timeverdier. Vanlige sikkerhetskopier av Home Assistant kan inneholde dem.
 
 Ved overgang til vintertid er de to timene som heter 02.00, to forskjellige

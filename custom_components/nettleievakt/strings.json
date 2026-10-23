@@ -44,6 +44,11 @@
     }
   },
   "entity": {
+    "number": {
+      "target_kw": {
+        "name": "Hourly warning threshold"
+      }
+    },
     "sensor": {
       "current_hour_kwh": {
         "name": "Imported energy this hour"

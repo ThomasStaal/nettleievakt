@@ -1,6 +1,7 @@
 """Constants for Nettleievakt."""
 
 DOMAIN = "nettleievakt"
+VERSION = "0.2.0b1"
 CONF_ENERGY = "energy_sensor"
 CONF_POWER = "power_sensor"
 CONF_TARGET = "target_kw"

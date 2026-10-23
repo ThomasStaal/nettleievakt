@@ -17,6 +17,11 @@ electrical protection, billing or automatic control of critical equipment.
 
 ## What you get
 
+A **Norwegian, mobile-friendly dashboard** appears automatically in the Home
+Assistant sidebar after setup. It uses built-in frontend components and needs
+no YAML, card plugins, manually entered entity IDs or separate cloud account.
+It works in the Home Assistant browser interface and Companion app.
+
 | Entity | What it tells you |
 | --- | --- |
 | Imported energy this hour | Imported kWh since the start of this clock hour, as of the latest measurement. |
@@ -26,6 +31,7 @@ electrical protection, billing or automatic control of critical equipment.
 | Hourly threshold warning | On when the projected hour reaches your target. Unknown when there is insufficient data. |
 | Monthly measurement coverage | How much of the month so far has usable measurements. |
 | Measurement status | Whether the current hour is covered, incomplete, stale or waiting for data. |
+| Hourly warning threshold | A persistent, adjustable number entity, also editable on the dashboard. |
 
 Example: after 30 minutes you have imported 2 kWh. If the current import of 8 kW
 continues, the full hour would end at about 6 kWh, or an hourly average of 6 kW.
@@ -79,14 +85,25 @@ not imported from Recorder or the vendor's app in this version.
 
 ## Dashboard and notifications
 
-The integration adds a device with six sensors and one binary sensor. Add them to
-your dashboard using Home Assistant's card editor. No additional frontend plugin
-is needed. The monthly-peak entity's `top_days` attribute shows the selected dates,
-hours (including UTC offset) and values.
+Open **Nettleievakt** in the sidebar. The dashboard shows the hourly forecast next
+to your editable warning threshold, imported energy, remaining hourly budget,
+observed monthly peaks and measurement coverage. It follows your Home Assistant
+theme. Unavailable data is never presented as zero or an all-clear signal.
 
-[Example dashboard YAML](examples/dashboard.yaml) is provided; replace the example
-entity IDs with those in your installation. The names depend on your language and
-the integration name.
+The early visual warning starts at 90% of your threshold. The binary warning
+entity turns on only when the forecast reaches the threshold itself. Push
+notifications are **not enabled automatically**.
+
+Change **Din varselgrense** and press **Lagre**. Both comma and decimal point are
+accepted. The integration briefly reloads and keeps its existing hourly history.
+The sidebar panel is removed when its integration is unloaded or deleted; other
+dashboards are not changed. Each configured meter gets its own panel.
+
+If you prefer your own dashboard, all six sensors, the binary warning and the
+threshold number remain available in Home Assistant's card editor. The optional
+[example YAML](examples/dashboard.yaml) needs your own entity IDs; the automatic
+panel does not. The monthly-peak entity's `top_days` attribute lists selected
+dates, hours (including UTC offsets) and values.
 
 For notifications, import [the notification blueprint](blueprints/hourly-warning.yaml)
 into Home Assistant. Select the warning entity and your own notification action.
@@ -143,7 +160,18 @@ python -m pip install -r requirements-test.txt
 python -m pytest tests/ha
 ```
 
-The GitHub Actions workflow runs both suites. See
+Frontend state tests require Node.js 20+:
+
+```sh
+node --test tests/frontend/*.test.mjs
+```
+
+For a local UI preview, run `python -m http.server 4380 --bind 127.0.0.1` from the
+repository root and open `http://127.0.0.1:4380/examples/preview.html`. This loads
+the actual panel with **simulated readings and service responses**. It is not a
+replacement for an installed Home Assistant or physical-meter test.
+
+The GitHub Actions workflow runs all three suites. See
 [the calculation notes](docs/calculations.md) before changing time handling or
 missing-data behaviour. Report firmware, sensor units and anonymised timestamps
 with issues; do not upload access tokens or your complete Home Assistant configuration.

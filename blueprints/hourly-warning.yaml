@@ -1,23 +1,23 @@
 blueprint:
-  name: Nettleievakt - hourly threshold warning
-  description: Notify after the hourly forecast stays over your target for two minutes.
+  name: Nettleievakt - varsel om høy timetopp
+  description: Gi beskjed når prognosen har ligget på eller over varselgrensen i to minutter.
   domain: automation
   input:
     warning_entity:
-      name: Nettleievakt hourly warning
+      name: Nettleievakts varsel om høy timetopp
       selector:
         entity:
           filter:
             - domain: binary_sensor
               integration: nettleievakt
     notification_actions:
-      name: Notification actions
-      description: Choose how Home Assistant should notify you. No equipment is switched by this blueprint.
+      name: Slik vil jeg få beskjed
+      description: Standard er et varsel inne i Home Assistant. Velg en mobilvarslingshandling for push til telefonen. Malen styrer ikke utstyr.
       default:
         - action: persistent_notification.create
           data:
             title: Nettleievakt
-            message: The current hour may exceed your chosen target. Check the forecast and measurement status.
+            message: Timen ligger an til å nå varselgrensen. Sjekk prognosen i Nettleievakt og vurder om noe forbruk kan vente. Dette betyr ikke nødvendigvis dyrere nettleie denne måneden.
       selector:
         action: {}
 triggers:

@@ -25,6 +25,7 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: python -m pytest tests/test_engine.py tests/test_metadata.py -q
+      - run: node --test tests/frontend/*.test.mjs
   home-assistant:
     runs-on: ubuntu-latest
     timeout-minutes: 10

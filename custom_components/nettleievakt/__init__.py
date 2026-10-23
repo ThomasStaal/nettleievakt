@@ -5,8 +5,14 @@ from homeassistant.helpers.storage import Store
 
 from .const import DOMAIN, STORAGE_VERSION
 from .coordinator import NettleievaktCoordinator
+from .dashboard import Dashboard, async_setup_resources
 
-PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.NUMBER]
+
+
+async def async_setup(hass, config):
+    await async_setup_resources(hass)
+    return True
 
 
 async def async_setup_entry(hass, entry):
@@ -15,7 +21,9 @@ async def async_setup_entry(hass, entry):
     entry.runtime_data = coordinator
     try:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+        await Dashboard(hass, entry).async_start()
     except Exception:
+        await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
         await coordinator.async_stop()
         raise
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))

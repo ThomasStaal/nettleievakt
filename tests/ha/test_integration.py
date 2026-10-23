@@ -4,11 +4,14 @@ from datetime import timedelta
 
 import pytest
 from homeassistant import data_entry_flow
+from homeassistant.components import frontend
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.nettleievakt.const import DOMAIN, energy_kwh, power_kw
+from custom_components.nettleievakt.dashboard import ENTITY_KEYS, STATIC_URL
 
 ENERGY = "sensor.house_import"
 POWER = "sensor.house_power"
@@ -132,6 +135,87 @@ async def test_options_keep_history_and_remove_deletes_storage(hass, freezer, ha
     await hass.config_entries.async_remove(entry.entry_id)
     await hass.async_block_till_done()
     assert f"{DOMAIN}.{entry.entry_id}" not in hass_storage
+
+
+async def test_dashboard_resources_registry_rename_and_unload(hass, hass_client):
+    seed(hass)
+    entry = await setup(hass)
+    path = f"nettleievakt-{entry.entry_id.lower()}"
+    panel = hass.data[frontend.DATA_PANELS][path]
+    assert panel.sidebar_title == "Nettleievakt"
+    assert panel.config["has_power"]
+    for key, domain in ENTITY_KEYS.items():
+        assert panel.config["entities"][key] == state_for(hass, entry, key, domain).entity_id
+    client = await hass_client()
+    response = await client.get(f"{STATIC_URL}/panel.js")
+    assert response.status == 200
+    assert "nettleievakt-panel" in await response.text()
+    response = await client.get(f"{STATIC_URL}/dashboard-model.mjs")
+    assert response.status == 200
+    assert "readDashboard" in await response.text()
+    registry = er.async_get(hass)
+    old_id = panel.config["entities"]["projected_peak_kw"]
+    registry.async_update_entity(old_id, new_entity_id="sensor.renamed_forecast")
+    await hass.async_block_till_done()
+    panel = hass.data[frontend.DATA_PANELS][path]
+    assert panel.config["entities"]["projected_peak_kw"] == "sensor.renamed_forecast"
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert path not in hass.data[frontend.DATA_PANELS]
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert path in hass.data[frontend.DATA_PANELS]
+
+
+async def test_dashboard_threshold_service_persists_history(hass, freezer):
+    freezer.move_to("2026-10-01T08:00:00+00:00")
+    seed(hass)
+    entry = await setup(hass)
+    freezer.tick(timedelta(minutes=1))
+    hass.states.async_set(ENERGY, "100.1", ENERGY_ATTR)
+    await hass.async_block_till_done()
+    old_hours = entry.runtime_data.tracker.dump()
+    threshold_id = state_for(hass, entry, "target_kw", "number").entity_id
+    await hass.services.async_call(
+        "number", "set_value", {"entity_id": threshold_id, "value": 4.5}, blocking=True
+    )
+    await hass.async_block_till_done()
+    assert entry.options["target_kw"] == 4.5
+    assert float(hass.states.get(threshold_id).state) == 4.5
+    assert entry.runtime_data.settings["target_kw"] == 4.5
+    assert entry.runtime_data.tracker.dump() == old_hours
+    assert f"nettleievakt-{entry.entry_id.lower()}" in hass.data[frontend.DATA_PANELS]
+    for value in [0, 101, 4.55]:
+        with pytest.raises(HomeAssistantError):
+            await hass.services.async_call(
+                "number", "set_value", {"entity_id": threshold_id, "value": value}, blocking=True
+            )
+    assert entry.options["target_kw"] == 4.5
+
+
+async def test_dashboards_are_independent_for_two_meters(hass):
+    seed(hass)
+    first = await setup(hass)
+    hass.states.async_set("sensor.second_import", "42", ENERGY_ATTR)
+    second = MockConfigEntry(
+        domain=DOMAIN,
+        data={**CONFIG, "energy_sensor": "sensor.second_import", "power_sensor": None},
+        unique_id="sensor.second_import",
+        title="Hyttas Nettleievakt",
+    )
+    second.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(second.entry_id)
+    await hass.async_block_till_done()
+    second_path = f"nettleievakt-{second.entry_id.lower()}"
+    second_panel = hass.data[frontend.DATA_PANELS][second_path]
+    assert not second_panel.config["has_power"]
+    assert (
+        second_panel.config["entities"]["target_kw"]
+        != state_for(hass, first, "target_kw", "number").entity_id
+    )
+    assert await hass.config_entries.async_unload(first.entry_id)
+    await hass.async_block_till_done()
+    assert second_path in hass.data[frontend.DATA_PANELS]
 
 
 @pytest.mark.parametrize("value,unit,expected", [(1000, "Wh", 1), (1, "kWh", 1), (1, "MWh", 1000)])

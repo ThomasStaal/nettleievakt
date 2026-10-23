@@ -44,6 +44,11 @@
     }
   },
   "entity": {
+    "number": {
+      "target_kw": {
+        "name": "Varselgrense for timen"
+      }
+    },
     "sensor": {
       "current_hour_kwh": {
         "name": "Kjøpt strøm denne timen"

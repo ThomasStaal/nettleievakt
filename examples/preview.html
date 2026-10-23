@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="nb">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nettleievakt · lokal demovisning</title>
+<style>
+  body { margin:0; font:14px system-ui,sans-serif; color:#202725; background:#f7f8fa; }
+  .demo { padding:12px 16px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; background:#fff1c9; border-bottom:1px solid #c3aa61; color:#463513; }
+  select,button { font:inherit; min-height:36px; }
+  body.dark { --primary-text-color:#e6e8e9; --secondary-text-color:#b1bbbd; --primary-background-color:#191b1d; --card-background-color:#23272a; --divider-color:#3e464a; --primary-color:#75b3be; --text-primary-color:#0d252b; --success-color:#77c89c; --warning-color:#efc568; --error-color:#f18c8c; }
+  nettleievakt-panel { height:calc(100dvh - 62px); }
+</style>
+<script type="module" src="../custom_components/nettleievakt/www/panel.js"></script></head>
+<body>
+<div class="demo"><strong>Demovisning · simulerte målinger</strong>
+<label>Tilstand <select id="scenario"><option value="normal">Under grensen</option><option value="near">Nær grensen</option><option value="high" selected>Over grensen</option><option value="partial">Ufullstendig time</option><option value="stale">Gamle målinger</option><option value="waiting">Oppstart</option><option value="power">Mangler effekt</option><option value="offline">Frakoblet</option><option value="error">Lagringsfeil</option></select></label>
+<label><input type="checkbox" id="dark"> Mørkt tema</label></div>
+<nettleievakt-panel></nettleievakt-panel>
+<script type="module">
+  await customElements.whenDefined("nettleievakt-panel");
+  const panel = document.querySelector("nettleievakt-panel");
+  let target = 5;
+  const entities = Object.fromEntries(["status", "projected_peak_kw", "current_hour_kwh", "remaining_power_kw", "monthly_peak_kw", "month_coverage_percent"].map(key => [key, `sensor.demo_${key}`]));
+  entities.target_kw = "number.demo_target";
+  function update() {
+    const scenario = document.getElementById("scenario").value;
+    const state = (value, attributes = {}) => ({ state: String(value), attributes });
+    const status = ({partial:"incomplete_hour",stale:"stale",waiting:"waiting"})[scenario] || "ok";
+    panel.panel = { config: { name:"Nettleievakt", entities, has_power:true, peak_days:3 } };
+    panel.narrow = window.innerWidth < 870;
+    panel.hass = {
+      connected: scenario !== "offline",
+      states: {
+        [entities.status]: state(status, {last_measurement: "2026-10-23T18:30:00+02:00"}),
+        [entities.target_kw]: state(target),
+        [entities.projected_peak_kw]: state(scenario === "power" ? "unknown" : ({normal:3.2, near:4.7})[scenario] || 6),
+        [entities.current_hour_kwh]: state(2),
+        [entities.remaining_power_kw]: state(Math.max(0, target - 2) * 2),
+        [entities.monthly_peak_kw]: state(4.73, { top_days:[
+          {date:"2026-10-22",hour:"2026-10-22T18:00:00+02:00",kw:5.1},
+          {date:"2026-10-19",hour:"2026-10-19T17:00:00+02:00",kw:4.8},
+          {date:"2026-10-21",hour:"2026-10-21T19:00:00+02:00",kw:4.3},
+        ] }),
+        [entities.month_coverage_percent]: state(89.4),
+      },
+      callService: async (domain, service, data, targetEntity) => {
+        if (domain !== "number" || service !== "set_value" || targetEntity.entity_id !== entities.target_kw) throw Error("Unexpected service");
+        await new Promise(resolve => setTimeout(resolve, 600));
+        if (scenario === "error") throw Error("Demo: denied");
+        target = data.value;
+        update();
+      },
+    };
+  }
+  document.getElementById("scenario").addEventListener("change", update);
+  document.getElementById("dark").addEventListener("change", event => document.body.classList.toggle("dark", event.target.checked));
+  window.addEventListener("resize", update);
+  // Exercise real HA-style refreshes without replacing a value being edited.
+  setInterval(update, 15000);
+  update();
+</script></body></html>
